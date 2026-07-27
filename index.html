@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ColorHarbor — 配色收藏库</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== Reset & Base ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#0D0D0D;
+  color:#F5F5F5;
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.5;
+}
+::selection{background:rgba(100,255,218,0.25);color:#F5F5F5}
+:focus-visible{outline:2px solid #64FFDA;outline-offset:2px;border-radius:4px}
+
+/* ===== CSS Variables ===== */
+:root{
+  --bg:#0D0D0D;
+  --card-bg:rgba(26,26,26,0.85);
+  --card-hover:rgba(34,34,34,0.95);
+  --accent:#64FFDA;
+  --accent-dim:rgba(100,255,218,0.12);
+  --accent-glow:rgba(100,255,218,0.2);
+  --text:#F5F5F5;
+  --text-muted:#8E8E8E;
+  --text-dim:#555;
+  --border:rgba(255,255,255,0.07);
+  --border-light:rgba(255,255,255,0.12);
+  --radius:14px;
+  --radius-sm:10px;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ===== Background Glow ===== */
+.bg-glow{
+  position:fixed;
+  top:-30%;
+  left:50%;
+  transform:translateX(-50%);
+  width:900px;
+  height:900px;
+  background:radial-gradient(circle,rgba(100,255,218,0.025) 0%,transparent 70%);
+  pointer-events:none;
+  z-index:0;
+}
+.bg-glow-bottom{
+  position:fixed;
+  bottom:-30%;
+  left:30%;
+  width:700px;
+  height:700px;
+  background:radial-gradient(circle,rgba(100,255,218,0.015) 0%,transparent 70%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ===== Container ===== */
+.container{max-width:1400px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+
+/* ===== Header ===== */
+.header{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:rgba(13,13,13,0.8);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+}
+.header-inner{
+  max-width:1400px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height:64px;
+}
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-decoration:none;
+  user-select:none;
+}
+.logo-icon{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:linear-gradient(135deg,#64FFDA,#48BF91);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  color:#0D0D0D;
+  font-weight:700;
+}
+.logo-text{
+  font-family:'Inter',sans-serif;
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:-0.02em;
+  color:var(--text);
+}
+.fav-trigger{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 18px;
+  background:var(--card-bg);
+  border:1px solid var(--border-light);
+  border-radius:100px;
+  color:var(--text-muted);
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.3s var(--ease);
+}
+.fav-trigger:hover{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:var(--accent-dim);
+}
+.fav-trigger svg{width:16px;height:16px;transition:all 0.3s var(--ease)}
+.fav-trigger:hover svg{fill:var(--accent);stroke:var(--accent)}
+.fav-count{
+  background:var(--accent-dim);
+  color:var(--accent);
+  font-family:'JetBrains Mono','Geist Mono',monospace;
+  font-size:12px;
+  font-weight:600;
+  padding:2px 8px;
+  border-radius:100px;
+  min-width:24px;
+  text-align:center;
+  transition:all 0.3s var(--ease);
+}
+.fav-trigger:hover .fav-count{background:var(--accent);color:#0D0D0D}
+
+/* ===== Filter Bar ===== */
+.filter-bar{
+  position:sticky;
+  top:64px;
+  z-index:49;
+  background:rgba(13,13,13,0.75);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+}
+.filter-inner{
+  max-width:1400px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height:56px;
+  gap:16px;
+}
+.filter-tags{display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-tags::-webkit-scrollbar{display:none}
+.tag{
+  padding:7px 18px;
+  border:1px solid var(--border-light);
+  border-radius:100px;
+  background:transparent;
+  color:var(--text-muted);
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.28s var(--ease);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.tag:hover{border-color:rgba(100,255,218,0.35);color:var(--text)}
+.tag.active{
+  background:var(--accent);
+  color:#0D0D0D;
+  border-color:var(--accent);
+  font-weight:600;
+  box-shadow:0 0 24px rgba(100,255,218,0.25);
+}
+.discover-btn{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:7px 20px;
+  background:transparent;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  border-radius:100px;
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.3s var(--ease);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.discover-btn:hover{
+  background:var(--accent-dim);
+  box-shadow:0 0 28px rgba(100,255,218,0.2);
+}
+.discover-btn svg{width:15px;height:15px}
+
+/* ===== Masonry ===== */
+.masonry{
+  max-width:1400px;
+  margin:0 auto;
+  padding:32px 2rem 80px;
+  columns:3;
+  column-gap:20px;
+  position:relative;
+  z-index:1;
+}
+@keyframes cardEnter{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ===== Palette Card ===== */
+.card{
+  break-inside:avoid;
+  margin-bottom:20px;
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  cursor:pointer;
+  position:relative;
+  transition:transform 0.45s var(--ease),box-shadow 0.45s var(--ease),border-color 0.35s var(--ease);
+  animation:cardEnter 0.6s var(--ease) backwards;
+  contain:layout style paint;
+}
+.card:hover{
+  transform:scale(1.025) translateY(-4px);
+  box-shadow:0 12px 50px var(--accent-glow),0 0 0 1px rgba(100,255,218,0.15);
+  border-color:rgba(100,255,218,0.25);
+  z-index:2;
+}
+
+/* Color bands */
+.card-colors{position:relative}
+.color-band{
+  width:100%;
+  position:relative;
+  border-bottom:0.5px solid rgba(255,255,255,0.06);
+  transition:filter 0.3s ease;
+}
+.color-band:last-child{border-bottom:none}
+.card:hover .color-band:last-child{border-bottom:none}
+.color-band-hex{
+  position:absolute;
+  bottom:6px;
+  right:8px;
+  font-family:'JetBrains Mono','Geist Mono',monospace;
+  font-size:11px;
+  font-weight:500;
+  padding:2px 7px;
+  border-radius:4px;
+  background:rgba(0,0,0,0.55);
+  color:rgba(255,255,255,0.9);
+  opacity:0;
+  transform:translateY(4px);
+  transition:all 0.25s var(--ease);
+  pointer-events:none;
+}
+.color-band:hover .color-band-hex{opacity:1;transform:translateY(0)}
+
+/* Card info below bands */
+.card-info{
+  padding:14px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.card-name{
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+  letter-spacing:-0.01em;
+  line-height:1.3;
+}
+.card-category{
+  font-size:11px;
+  font-weight:500;
+  color:var(--text-dim);
+  padding:3px 10px;
+  border-radius:100px;
+  background:rgba(100,255,218,0.06);
+  border:1px solid rgba(100,255,218,0.1);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* Favorite heart */
+.card-fav{
+  position:absolute;
+  bottom:12px;
+  right:12px;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:rgba(13,13,13,0.7);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.1);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  opacity:0;
+  transform:scale(0.85);
+  transition:all 0.3s var(--ease-spring);
+  z-index:5;
+}
+.card:hover .card-fav,.card-fav.active{opacity:1;transform:scale(1)}
+.card-fav:hover{background:rgba(100,255,218,0.15);border-color:var(--accent)}
+.card-fav svg{width:15px;height:15px;transition:all 0.3s var(--ease-spring)}
+.card-fav.active svg{fill:var(--accent);stroke:var(--accent)}
+.card-fav:not(.active) svg{stroke:rgba(255,255,255,0.5)}
+
+/* ===== Empty State ===== */
+.empty-state{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:80px 2rem;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+.empty-state.visible{display:flex}
+.empty-state svg{width:64px;height:64px;margin-bottom:20px;opacity:0.3}
+.empty-state h3{font-family:'Inter',sans-serif;font-size:18px;font-weight:600;color:var(--text-muted);margin-bottom:8px}
+.empty-state p{font-size:14px;color:var(--text-dim);max-width:400px}
+
+/* ===== Detail Overlay ===== */
+.detail-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.88);
+  backdrop-filter:blur(24px) saturate(120%);
+  -webkit-backdrop-filter:blur(24px) saturate(120%);
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.35s var(--ease);
+}
+.detail-overlay.open{opacity:1;pointer-events:auto}
+.detail-modal{
+  background:#121212;
+  border:1px solid var(--border-light);
+  border-radius:20px;
+  max-width:960px;
+  width:100%;
+  max-height:90vh;
+  overflow-y:auto;
+  position:relative;
+  transform:scale(0.95) translateY(10px);
+  transition:transform 0.4s var(--ease-spring);
+  box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+.detail-overlay.open .detail-modal{transform:scale(1) translateY(0)}
+
+.detail-super-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 28px 0;
+}
+.detail-close{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.06);
+  border:none;
+  color:var(--text-muted);
+  font-size:18px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.25s var(--ease);
+}
+.detail-close:hover{background:rgba(255,255,255,0.12);color:var(--text)}
+.detail-fav-btn{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 16px;
+  background:var(--card-bg);
+  border:1px solid var(--border-light);
+  border-radius:100px;
+  color:var(--text-muted);
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.3s var(--ease);
+}
+.detail-fav-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.detail-fav-btn.favorited{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+.detail-fav-btn svg{width:15px;height:15px}
+.detail-fav-btn.favorited svg{fill:var(--accent);stroke:var(--accent)}
+
+.detail-content{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+  padding:24px 28px 28px;
+}
+
+/* Detail Left */
+.detail-left{display:flex;flex-direction:column;gap:20px}
+.detail-color-display{
+  width:100%;
+  height:220px;
+  border-radius:var(--radius);
+  position:relative;
+  overflow:hidden;
+  transition:background-color 0.45s var(--ease);
+  border:1px solid rgba(255,255,255,0.08);
+}
+.detail-display-hex{
+  position:absolute;
+  bottom:16px;
+  left:16px;
+  font-family:'JetBrains Mono','Geist Mono',monospace;
+  font-size:28px;
+  font-weight:600;
+  letter-spacing:-0.02em;
+  padding:6px 16px;
+  border-radius:8px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  color:#F5F5F5;
+  border:1px solid rgba(255,255,255,0.1);
+}
+.detail-copy-main{
+  position:absolute;
+  bottom:16px;
+  right:16px;
+  padding:8px 18px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:100px;
+  color:#F5F5F5;
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.25s var(--ease);
+}
+.detail-copy-main:hover{background:var(--accent);color:#0D0D0D;border-color:var(--accent)}
+
+.color-list-label{
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--text-dim);
+  margin-bottom:-8px;
+}
+.color-list{display:flex;flex-direction:column;gap:6px}
+.color-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid transparent;
+  cursor:pointer;
+  transition:all 0.25s var(--ease);
+}
+.color-row:hover{background:rgba(255,255,255,0.04);border-color:var(--border-light)}
+.color-row.active{
+  background:rgba(100,255,218,0.05);
+  border-color:rgba(100,255,218,0.25);
+  box-shadow:0 0 0 1px rgba(100,255,218,0.08);
+}
+.color-swatch{
+  width:36px;height:36px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.15);
+  flex-shrink:0;
+  transition:transform 0.25s var(--ease);
+}
+.color-row:hover .color-swatch{transform:scale(1.1)}
+.color-hex{
+  font-family:'JetBrains Mono','Geist Mono',monospace;
+  font-size:14px;
+  font-weight:500;
+  color:var(--text);
+  flex:1;
+}
+.color-copy-mini{
+  padding:5px 12px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border-light);
+  border-radius:6px;
+  color:var(--text-muted);
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.2s var(--ease);
+  flex-shrink:0;
+}
+.color-copy-mini:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent)}
+
+/* Detail Right */
+.detail-right{display:flex;flex-direction:column;gap:16px}
+.preview-label{
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--text-dim);
+}
+.ui-preview{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  padding:24px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+
+/* Preview: Button */
+.preview-btn{
+  padding:11px 28px;
+  border:none;
+  border-radius:100px;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all 0.4s var(--ease);
+  align-self:flex-start;
+}
+.preview-btn:active{transform:scale(0.96)}
+
+/* Preview: Card */
+.preview-card{
+  padding:18px;
+  border-radius:var(--radius-sm);
+  border:1.5px solid rgba(255,255,255,0.1);
+  background:rgba(26,26,26,0.5);
+  transition:border-color 0.4s var(--ease);
+}
+.preview-card h5{
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:6px;
+}
+.preview-card p{
+  font-size:12px;
+  color:var(--text-muted);
+  line-height:1.5;
+  margin-bottom:12px;
+}
+.preview-card-footer{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.preview-tag{
+  font-size:11px;
+  font-weight:500;
+  padding:4px 10px;
+  border-radius:6px;
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-muted);
+  transition:all 0.4s var(--ease);
+}
+
+/* Preview: Input */
+.preview-input{
+  padding:10px 14px;
+  border-radius:8px;
+  border:1.5px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.03);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  outline:none;
+  transition:all 0.35s var(--ease);
+}
+.preview-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+
+/* Preview: Rating */
+.preview-rating-section{display:flex;align-items:center;gap:12px}
+.preview-rating-label{font-size:12px;color:var(--text-muted);font-weight:500}
+.stars{display:flex;gap:2px}
+.star{
+  background:none;
+  border:none;
+  font-size:18px;
+  color:var(--text-dim);
+  cursor:pointer;
+  transition:all 0.25s var(--ease);
+  padding:0;
+  line-height:1;
+}
+.star.filled{transition:color 0.4s var(--ease)}
+.star:hover~.star{color:var(--text-dim)}
+
+/* Preview: Badge */
+.preview-badges{display:flex;gap:8px;flex-wrap:wrap}
+.preview-badge{
+  padding:5px 12px;
+  border-radius:100px;
+  font-size:11px;
+  font-weight:500;
+  transition:all 0.4s var(--ease);
+}
+
+/* Detail Footer */
+.detail-footer{
+  padding:20px 28px 24px;
+  border-top:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.detail-name{
+  font-family:'Inter',sans-serif;
+  font-size:20px;
+  font-weight:700;
+  color:var(--text);
+  letter-spacing:-0.02em;
+}
+.detail-category{
+  font-size:12px;
+  font-weight:500;
+  color:var(--text-muted);
+  padding:4px 12px;
+  border-radius:100px;
+  background:rgba(100,255,218,0.06);
+  border:1px solid rgba(100,255,218,0.1);
+}
+
+/* ===== Favorites Drawer ===== */
+.drawer-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  z-index:89;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.35s var(--ease);
+}
+.drawer-overlay.open{opacity:1;pointer-events:auto}
+.favorites-drawer{
+  position:fixed;
+  top:0;
+  right:0;
+  width:400px;
+  max-width:90vw;
+  height:100vh;
+  background:#121212;
+  border-left:1px solid var(--border-light);
+  z-index:90;
+  transform:translateX(100%);
+  transition:transform 0.4s var(--ease);
+  display:flex;
+  flex-direction:column;
+  box-shadow:-8px 0 40px rgba(0,0,0,0.5);
+}
+.favorites-drawer.open{transform:translateX(0)}
+
+.drawer-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 24px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.drawer-header h2{
+  font-family:'Inter',sans-serif;
+  font-size:18px;
+  font-weight:700;
+  color:var(--text);
+  letter-spacing:-0.02em;
+}
+.drawer-header-actions{display:flex;align-items:center;gap:8px}
+.drawer-clear{
+  padding:6px 14px;
+  background:transparent;
+  border:1px solid var(--border-light);
+  border-radius:100px;
+  color:var(--text-dim);
+  font-family:'Inter',sans-serif;
+  font-size:12px;
+  cursor:pointer;
+  transition:all 0.25s var(--ease);
+}
+.drawer-clear:hover{color:#FF5E7D;border-color:#FF5E7D}
+.drawer-close{
+  width:32px;height:32px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.06);
+  border:none;
+  color:var(--text-muted);
+  font-size:16px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.25s var(--ease);
+}
+.drawer-close:hover{background:rgba(255,255,255,0.12);color:var(--text)}
+
+.drawer-content{
+  flex:1;
+  overflow-y:auto;
+  padding:16px 24px 40px;
+}
+.drawer-empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:60px 20px;
+}
+.drawer-empty svg{width:48px;height:48px;margin-bottom:16px;opacity:0.25}
+.drawer-empty p{font-size:14px;color:var(--text-dim)}
+.drawer-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:var(--radius-sm);
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);
+  cursor:pointer;
+  transition:all 0.25s var(--ease);
+  margin-bottom:8px;
+}
+.drawer-item:hover{background:rgba(255,255,255,0.04);border-color:var(--border-light)}
+.drawer-item-preview{
+  display:flex;
+  border-radius:6px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,0.08);
+  flex-shrink:0;
+}
+.drawer-item-preview span{width:16px;height:40px}
+.drawer-item-info{flex:1;min-width:0}
+.drawer-item-name{
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-weight:600;
+  color:var(--text);
+  margin-bottom:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.drawer-item-cat{font-size:11px;color:var(--text-dim)}
+.drawer-item-remove{
+  width:28px;height:28px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.04);
+  border:none;
+  color:var(--text-dim);
+  font-size:14px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s var(--ease);
+  flex-shrink:0;
+}
+.drawer-item-remove:hover{background:rgba(255,94,125,0.12);color:#FF5E7D}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;
+  bottom:32px;
+  left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#1A1A1A;
+  color:var(--text);
+  padding:12px 24px;
+  border-radius:100px;
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  font-weight:500;
+  border:1px solid var(--border-light);
+  box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  z-index:200;
+  opacity:0;
+  pointer-events:none;
+  transition:all 0.35s var(--ease-spring);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast.accent{border-color:var(--accent);box-shadow:0 4px 24px var(--accent-glow)}
+
+/* ===== Footer ===== */
+.site-footer{
+  max-width:1400px;
+  margin:0 auto;
+  padding:40px 2rem 48px;
+  text-align:center;
+  border-top:1px solid var(--border);
+  position:relative;
+  z-index:1;
+}
+.site-footer p{font-size:13px;color:var(--text-dim)}
+.site-footer span{color:var(--accent);font-weight:600}
+
+/* ===== Reduced Motion ===== */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:0.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:0.01ms!important;
+  }
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2)}
+
+/* ===== Responsive ===== */
+@media(max-width:1100px){
+  .masonry{columns:2}
+  .detail-content{grid-template-columns:1fr;gap:24px}
+  .detail-color-display{height:180px}
+}
+@media(max-width:700px){
+  .masonry{columns:1;padding:20px 1rem 60px}
+  .container{padding:0 1rem}
+  .header{padding:0 1rem}
+  .filter-bar{padding:0 1rem}
+  .filter-inner{gap:10px}
+  .logo-text{font-size:17px}
+  .fav-trigger span:not(.fav-count){display:none}
+  .detail-overlay{padding:0;align-items:stretch}
+  .detail-modal{border-radius:0;max-height:100vh;height:100vh}
+  .detail-content{padding:20px}
+  .detail-super-header{padding:16px 20px 0}
+  .detail-footer{padding:16px 20px}
+  .favorites-drawer{width:100vw;max-width:100vw}
+  .detail-display-hex{font-size:22px;bottom:12px;left:12px}
+  .tag{font-size:12px;padding:6px 14px}
+}
+</style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-glow"></div>
+<div class="bg-glow-bottom"></div>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">&#9670;</div>
+      <span class="logo-text">ColorHarbor</span>
+    </div>
+    <button class="fav-trigger" id="favTrigger" aria-label="Open favorites drawer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <span>Favorites</span>
+      <span class="fav-count" id="favCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- Filter Bar -->
+<nav class="filter-bar">
+  <div class="filter-inner">
+    <div class="filter-tags" id="filterTags">
+      <button class="tag active" data-category="all">All</button>
+      <button class="tag" data-category="minimal">极简</button>
+      <button class="tag" data-category="gradient">渐变</button>
+      <button class="tag" data-category="retro">复古</button>
+      <button class="tag" data-category="neon">霓虹</button>
+      <button class="tag" data-category="nature">自然</button>
+    </div>
+    <button class="discover-btn" id="discoverBtn" aria-label="Discover random palette">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+      <span>随机发现</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Masonry Grid -->
+<main class="masonry" id="masonryGrid" role="list" aria-label="Color palette gallery"></main>
+
+<!-- Empty State -->
+<div class="empty-state" id="emptyState">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+  <h3>No palettes found</h3>
+  <p>Try a different category or discover something new</p>
+</div>
+
+<!-- Detail Overlay -->
+<div class="detail-overlay" id="detailOverlay" role="dialog" aria-modal="true" aria-label="Palette detail view">
+  <div class="detail-modal" id="detailModal">
+    <div class="detail-super-header">
+      <button class="detail-close" id="detailClose" aria-label="Close detail">&#10005;</button>
+      <button class="detail-fav-btn" id="detailFavBtn" aria-label="Toggle favorite">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span>收藏</span>
+      </button>
+    </div>
+    <div class="detail-content">
+      <div class="detail-left">
+        <div class="detail-color-display" id="detailColorDisplay">
+          <span class="detail-display-hex" id="detailHex">#64FFDA</span>
+          <button class="detail-copy-main" id="detailCopyMain">Copy</button>
+        </div>
+        <span class="color-list-label">All Colors</span>
+        <div class="color-list" id="detailColorList"></div>
+      </div>
+      <div class="detail-right">
+        <span class="preview-label">UI Preview</span>
+        <div class="ui-preview">
+          <button class="preview-btn" id="previewBtn">Primary Button</button>
+          <div class="preview-card" id="previewCard">
+            <h5>Notification Card</h5>
+            <p>A styled card component demonstrating how this palette renders in a real interface context.</p>
+            <div class="preview-card-footer">
+              <span class="preview-tag" id="previewTag">Feature</span>
+            </div>
+          </div>
+          <input class="preview-input" id="previewInput" type="text" placeholder="Type something here...">
+          <div class="preview-rating-section">
+            <span class="preview-rating-label">Rating</span>
+            <div class="stars" id="previewStars">
+              <button class="star filled" data-value="1">&#9733;</button>
+              <button class="star filled" data-value="2">&#9733;</button>
+              <button class="star filled" data-value="3">&#9733;</button>
+              <button class="star filled" data-value="4">&#9733;</button>
+              <button class="star" data-value="5">&#9733;</button>
+            </div>
+          </div>
+          <div class="preview-badges">
+            <span class="preview-badge" id="previewBadge1" style="background:rgba(100,255,218,0.1);color:#64FFDA;border:1px solid rgba(100,255,218,0.2)">Active</span>
+            <span class="preview-badge" id="previewBadge2" style="background:rgba(255,255,255,0.04);color:#8E8E8E;border:1px solid rgba(255,255,255,0.1)">Draft</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="detail-footer">
+      <h2 class="detail-name" id="detailName">Carbon Night</h2>
+      <span class="detail-category" id="detailCategory">Minimal</span>
+    </div>
+  </div>
+</div>
+
+<!-- Favorites Drawer -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="favorites-drawer" id="favDrawer" role="dialog" aria-modal="true" aria-label="Favorites drawer">
+  <div class="drawer-header">
+    <h2>Favorites</h2>
+    <div class="drawer-header-actions">
+      <button class="drawer-clear" id="drawerClear">Clear All</button>
+      <button class="drawer-close" id="drawerClose" aria-label="Close drawer">&#10005;</button>
+    </div>
+  </div>
+  <div class="drawer-content" id="drawerContent"></div>
+</aside>
+
+<!-- Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <p>ColorHarbor &mdash; Curated color palettes for <span>designers</span> &amp; <span>developers</span></p>
+</footer>
+
+<script>
+// ===================== DATA =====================
+const palettes = [
+  { id:1,  name:"Carbon Night",   category:"minimal",  colors:["#0D0D0D","#1A1A1A","#2A2A2A","#F5F5F5","#64FFDA"], desc:"Minimal palette inspired by carbon fiber and midnight skies" },
+  { id:2,  name:"Pure Mono",      category:"minimal",  colors:["#0A0A0A","#1C1C1C","#4A4A4A","#B0B0B0","#FFFFFF"], desc:"A monochromatic study from void to pure white" },
+  { id:3,  name:"Stone Path",     category:"minimal",  colors:["#1A1A1A","#2D2D2D","#525252","#A3A3A3","#E5E5E5"], desc:"Stepped grays like wet stone under dusk light" },
+  { id:4,  name:"Quiet Gray",     category:"minimal",  colors:["#2B2B2B","#404040","#6B6B6B","#9A9A9A","#D6D6D6"], desc:"Gentle tonal progression for calm, modern interfaces" },
+  { id:5,  name:"Ink Wash",       category:"minimal",  colors:["#0D0D0D","#333333","#666666","#CCCCCC","#F5F5F5"], desc:"Japanese ink wash aesthetic with deep rich blacks" },
+  { id:6,  name:"Aurora Wave",    category:"gradient", colors:["#64FFDA","#48BF91","#2D7D6E","#1A4D4A","#0D2D2A"], desc:"Northern lights cascading into deep teal depths" },
+  { id:7,  name:"Sunset Fade",    category:"gradient", colors:["#FF6B6B","#FFA07A","#FFD93D","#6BCB77","#4D96FF"], desc:"Warm sunset melting into cool twilight blues" },
+  { id:8,  name:"Cosmic Drift",   category:"gradient", colors:["#7B2FF7","#F107A3","#4C2FFF","#00DDEB","#64FFDA"], desc:"Interstellar colors drifting through deep space" },
+  { id:9,  name:"Ocean Depth",    category:"gradient", colors:["#03045E","#023E8A","#0077B6","#00B4D8","#90E0EF"], desc:"Descending through ocean layers to abyssal blue" },
+  { id:10, name:"Lavender Mist",  category:"gradient", colors:["#2D1B69","#5B3FA8","#8B5FBF","#C4A7E7","#E8DFFF"], desc:"Soft purple gradients like morning mist over lavender fields" },
+  { id:11, name:"80s Terminal",   category:"retro",    colors:["#00FF41","#008F11","#0D0D0D","#3A3A3A","#003B00"], desc:"Classic green phosphor terminal on black CRT" },
+  { id:12, name:"Vintage Film",   category:"retro",    colors:["#C9A961","#8B7355","#4A3C30","#2D2620","#D4C5A9"], desc:"Warm sepia tones from aged celluloid film stock" },
+  { id:13, name:"Retro Wave",     category:"retro",    colors:["#FF006E","#FB5607","#FFBE0B","#8338EC","#3A86FF"], desc:"Synthwave sunset over a neon-drenched pixel grid" },
+  { id:14, name:"Sepia Tone",     category:"retro",    colors:["#704214","#9C6B30","#C4985C","#E0C38A","#F5E6C8"], desc:"Faded photographs and antique leather-bound books" },
+  { id:15, name:"Cyber City",     category:"neon",     colors:["#64FFDA","#FF2E97","#FFE600","#00F0FF","#B026FF"], desc:"Blade Runner cityscape dripping in holographic neon" },
+  { id:16, name:"Electric Pulse", category:"neon",     colors:["#00FFFF","#FF00FF","#00FF00","#FFFF00","#FF0080"], desc:"Pure electric energy like data flowing through circuits" },
+  { id:17, name:"Neon Nights",    category:"neon",     colors:["#FF006E","#00F5FF","#FFBF00","#8338EC","#06FFA5"], desc:"Vibrant nightlife palette from a futuristic metropolis" },
+  { id:18, name:"Glitch Pop",     category:"neon",     colors:["#64FFDA","#FF006E","#FBFF12","#00B4D8","#B026FF"], desc:"Digital glitch aesthetic with popping neon accents" },
+  { id:19, name:"Tokyo Night",    category:"neon",     colors:["#1A1B26","#7AA2F7","#BB9AF7","#F7768E","#9ECE6A"], desc:"Neon reflections on wet Tokyo streets after rain" },
+  { id:20, name:"Forest Mist",    category:"nature",   colors:["#2D5016","#4A7C2E","#8FBC6F","#C5D89D","#E8F0D8"], desc:"Layered forest greens from deep moss to morning mist" },
+  { id:21, name:"Ocean Reef",     category:"nature",   colors:["#003B5C","#006D77","#40A8C4","#83C5BE","#EDF6F9"], desc:"Coral reef shallows fading into deep ocean blue" },
+  { id:22, name:"Desert Bloom",   category:"nature",   colors:["#3E2723","#6D4C41","#A1887F","#D7CCC8","#EFEBE9"], desc:"Warm earth tones from sun-baked desert landscapes" },
+  { id:23, name:"Autumn Trail",   category:"nature",   colors:["#8B4513","#CD853F","#DEB887","#F4A460","#D2691E"], desc:"Fallen leaves in amber, rust, and golden brown" },
+  { id:24, name:"Arctic Light",   category:"nature",   colors:["#0D1B2A","#1B3A5B","#4A6FA5","#A0C4E8","#E8F0FF"], desc:"Crisp polar light refracting through ice and snow" }
+];
+
+// ===================== STATE =====================
+let state = {
+  currentFilter: 'all',
+  favorites: [],
+  detailPalette: null,
+  detailColorIndex: 0,
+  drawerOpen: false,
+  detailOpen: false
+};
+
+// ===================== DOM REFS =====================
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+const dom = {
+  grid: $('#masonryGrid'),
+  emptyState: $('#emptyState'),
+  filterTags: $('#filterTags'),
+  discoverBtn: $('#discoverBtn'),
+  favTrigger: $('#favTrigger'),
+  favCount: $('#favCount'),
+  favDrawer: $('#favDrawer'),
+  drawerOverlay: $('#drawerOverlay'),
+  drawerContent: $('#drawerContent'),
+  drawerClose: $('#drawerClose'),
+  drawerClear: $('#drawerClear'),
+  detailOverlay: $('#detailOverlay'),
+  detailClose: $('#detailClose'),
+  detailColorDisplay: $('#detailColorDisplay'),
+  detailHex: $('#detailHex'),
+  detailCopyMain: $('#detailCopyMain'),
+  detailColorList: $('#detailColorList'),
+  detailName: $('#detailName'),
+  detailCategory: $('#detailCategory'),
+  detailFavBtn: $('#detailFavBtn'),
+  toast: $('#toast')
+};
+
+// ===================== INIT =====================
+function init() {
+  loadFavorites();
+  renderGrid();
+  bindEvents();
+  updateFavCount();
+}
+init();
+
+// ===================== LOAD / SAVE FAVORITES =====================
+function loadFavorites() {
+  try {
+    state.favorites = JSON.parse(localStorage.getItem('colorharbor_favorites') || '[]');
+  } catch(e) { state.favorites = []; }
+}
+function saveFavorites() {
+  try {
+    localStorage.setItem('colorharbor_favorites', JSON.stringify(state.favorites));
+  } catch(e) {}
+}
+
+// ===================== RENDER GRID =====================
+function renderGrid() {
+  const filtered = state.currentFilter === 'all'
+    ? palettes
+    : palettes.filter(p => p.category === state.currentFilter);
+
+  dom.grid.innerHTML = '';
+  dom.emptyState.classList.toggle('visible', filtered.length === 0);
+
+  filtered.forEach((p, i) => {
+    const card = createCard(p, i);
+    dom.grid.appendChild(card);
+  });
+
+  updateFavCount();
+}
+
+function createCard(palette, index) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.animationDelay = `${index * 0.04}s`;
+  card.setAttribute('data-id', palette.id);
+  card.setAttribute('data-category', palette.category);
+  card.setAttribute('role', 'listitem');
+  card.tabIndex = 0;
+
+  // Color bands
+  const colorsDiv = document.createElement('div');
+  colorsDiv.className = 'card-colors';
+  palette.colors.forEach(c => {
+    const band = document.createElement('div');
+    band.className = 'color-band';
+    const h = 28 + Math.random() * 65;
+    band.style.height = h + 'px';
+    band.style.background = c;
+    const hexSpan = document.createElement('span');
+    hexSpan.className = 'color-band-hex';
+    hexSpan.textContent = c;
+    band.appendChild(hexSpan);
+    colorsDiv.appendChild(band);
+  });
+  card.appendChild(colorsDiv);
+
+  // Info
+  const info = document.createElement('div');
+  info.className = 'card-info';
+  info.innerHTML = `
+    <span class="card-name">${palette.name}</span>
+    <span class="card-category">${categoryName(palette.category)}</span>
+  `;
+  card.appendChild(info);
+
+  // Favorite heart
+  const isFav = state.favorites.includes(palette.id);
+  const favBtn = document.createElement('button');
+  favBtn.className = 'card-fav' + (isFav ? ' active' : '');
+  favBtn.setAttribute('data-id', palette.id);
+  favBtn.setAttribute('aria-label', isFav ? 'Remove from favorites' : 'Add to favorites');
+  favBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+  favBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(palette.id); });
+  card.appendChild(favBtn);
+
+  // Click to open detail
+  card.addEventListener('click', () => openDetail(palette));
+  card.addEventListener('keydown', (e) => { if (e.key === 'Enter') openDetail(palette); });
+
+  return card;
+}
+
+// ===================== FILTER =====================
+function filterByCategory(cat) {
+  state.currentFilter = cat;
+  // Update active tag
+  $$('.tag').forEach(t => t.classList.toggle('active', t.dataset.category === cat));
+  renderGrid();
+  // Scroll to top of grid
+  dom.grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===================== DISCOVER =====================
+function discoverRandom() {
+  const filtered = state.currentFilter === 'all'
+    ? palettes
+    : palettes.filter(p => p.category === state.currentFilter);
+
+  if (filtered.length === 0) return;
+  const random = filtered[Math.floor(Math.random() * filtered.length)];
+
+  // Brief spin animation on the button
+  const icon = dom.discoverBtn.querySelector('svg');
+  icon.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+  icon.style.transform = 'rotate(360deg)';
+  setTimeout(() => { icon.style.transform = 'rotate(0deg)'; }, 500);
+
+  openDetail(random);
+}
+
+// ===================== FAVORITES =====================
+function toggleFavorite(id) {
+  const idx = state.favorites.indexOf(id);
+  if (idx > -1) {
+    state.favorites.splice(idx, 1);
+    showToast('Removed from favorites');
+  } else {
+    state.favorites.push(id);
+    showToast('Added to favorites', true);
+  }
+  saveFavorites();
+
+  // Update card hearts
+  updateCardHearts(id);
+  // Update detail fav button
+  if (state.detailPalette && state.detailPalette.id === id) updateDetailFavBtn();
+  // Update drawer
+  if (state.drawerOpen) renderFavorites();
+  updateFavCount();
+}
+
+function updateCardHearts(id) {
+  const isFav = state.favorites.includes(id);
+  $$(`.card-fav[data-id="${id}"]`).forEach(btn => {
+    btn.classList.toggle('active', isFav);
+    btn.setAttribute('aria-label', isFav ? 'Remove from favorites' : 'Add to favorites');
+  });
+}
+
+function updateFavCount() {
+  dom.favCount.textContent = state.favorites.length;
+}
+
+function toggleFavoriteById(id) {
+  toggleFavorite(id);
+}
+
+// ===================== DETAIL VIEW =====================
+function openDetail(palette) {
+  state.detailPalette = palette;
+  state.detailColorIndex = 0;
+  renderDetail();
+  updateDetailFavBtn();
+  dom.detailOverlay.classList.add('open');
+  state.detailOpen = true;
+  document.body.style.overflow = 'hidden';
+  resetRating();
+
+  // Focus trap
+  setTimeout(() => dom.detailClose.focus(), 100);
+}
+
+function closeDetail() {
+  dom.detailOverlay.classList.remove('open');
+  state.detailOpen = false;
+  state.detailPalette = null;
+  document.body.style.overflow = '';
+}
+
+function selectColor(index) {
+  state.detailColorIndex = index;
+  renderDetail();
+}
+
+function resetRating() {
+  $$('#previewStars .star').forEach((s, i) => s.classList.toggle('filled', i < 4));
+}
+
+function renderDetail() {
+  const p = state.detailPalette;
+  if (!p) return;
+  const color = p.colors[state.detailColorIndex];
+
+  // Color display
+  dom.detailColorDisplay.style.background = color;
+  dom.detailHex.textContent = color;
+
+  // Color list
+  dom.detailColorList.innerHTML = p.colors.map((c, i) => `
+    <div class="color-row${i === state.detailColorIndex ? ' active' : ''}" data-index="${i}">
+      <div class="color-swatch" style="background:${c}"></div>
+      <span class="color-hex">${c}</span>
+      <button class="color-copy-mini" data-hex="${c}">Copy</button>
+    </div>
+  `).join('');
+
+  // Bind color row clicks
+  dom.detailColorList.querySelectorAll('.color-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.classList.contains('color-copy-mini')) return;
+      selectColor(parseInt(row.dataset.index));
+    });
+  });
+  // Bind copy buttons
+  dom.detailColorList.querySelectorAll('.color-copy-mini').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      copyToClipboard(btn.dataset.hex);
+    });
+  });
+
+  // Footer
+  dom.detailName.textContent = p.name;
+  dom.detailCategory.textContent = categoryName(p.category);
+
+  // UI Preview
+  updatePreview(color);
+}
+
+function updatePreview(color) {
+  const contrast = getContrastColor(color);
+
+  // Button
+  const btn = $('#previewBtn');
+  btn.style.background = color;
+  btn.style.color = contrast;
+  btn.style.boxShadow = `0 4px 20px ${hexToRgba(color, 0.3)}`;
+
+  // Card
+  const card = $('#previewCard');
+  card.style.borderColor = hexToRgba(color, 0.25);
+
+  // Input
+  const input = $('#previewInput');
+  input.style.setProperty('--focus-color', color);
+  input.onfocus = () => { input.style.borderColor = color; input.style.boxShadow = `0 0 0 3px ${hexToRgba(color, 0.12)}`; };
+  input.onblur = () => { input.style.borderColor = 'rgba(255,255,255,0.1)'; input.style.boxShadow = 'none'; };
+
+  // Stars
+  $$('#previewStars .star').forEach(s => {
+    if (s.classList.contains('filled')) s.style.color = color;
+  });
+
+  // Tag
+  const tag = $('#previewTag');
+  tag.style.background = hexToRgba(color, 0.1);
+  tag.style.color = color;
+  tag.style.borderColor = hexToRgba(color, 0.2);
+
+  // Badges
+  const badge1 = $('#previewBadge1');
+  badge1.style.background = hexToRgba(color, 0.1);
+  badge1.style.color = color;
+  badge1.style.borderColor = hexToRgba(color, 0.2);
+}
+
+function updateDetailFavBtn() {
+  if (!state.detailPalette) return;
+  const isFav = state.favorites.includes(state.detailPalette.id);
+  dom.detailFavBtn.classList.toggle('favorited', isFav);
+  dom.detailFavBtn.querySelector('span').textContent = isFav ? '已收藏' : '收藏';
+}
+
+// ===================== FAVORITES DRAWER =====================
+function openFavorites() {
+  renderFavorites();
+  dom.favDrawer.classList.add('open');
+  dom.drawerOverlay.classList.add('open');
+  state.drawerOpen = true;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFavorites() {
+  dom.favDrawer.classList.remove('open');
+  dom.drawerOverlay.classList.remove('open');
+  state.drawerOpen = false;
+  document.body.style.overflow = '';
+}
+
+function renderFavorites() {
+  const favPalettes = palettes.filter(p => state.favorites.includes(p.id));
+
+  if (favPalettes.length === 0) {
+    dom.drawerContent.innerHTML = `
+      <div class="drawer-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <p>No favorites yet<br>Click the heart icon to save palettes</p>
+      </div>`;
+    return;
+  }
+
+  dom.drawerContent.innerHTML = favPalettes.map(p => `
+    <div class="drawer-item" data-id="${p.id}">
+      <div class="drawer-item-preview">
+        ${p.colors.map(c => `<span style="background:${c}"></span>`).join('')}
+      </div>
+      <div class="drawer-item-info">
+        <div class="drawer-item-name">${p.name}</div>
+        <div class="drawer-item-cat">${categoryName(p.category)}</div>
+      </div>
+      <button class="drawer-item-remove" data-id="${p.id}" aria-label="Remove from favorites">&#10005;</button>
+    </div>
+  `).join('');
+
+  // Bind clicks
+  dom.drawerContent.querySelectorAll('.drawer-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('drawer-item-remove')) return;
+      const palette = palettes.find(p => p.id === parseInt(item.dataset.id));
+      if (palette) {
+        closeFavorites();
+        openDetail(palette);
+      }
+    });
+  });
+  // Bind remove buttons
+  dom.drawerContent.querySelectorAll('.drawer-item-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(parseInt(btn.dataset.id));
+    });
+  });
+}
+
+// ===================== COPY =====================
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast(`Copied ${text}`, true));
+  } else {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast(`Copied ${text}`, true);
+  }
+}
+
+// ===================== TOAST =====================
+let toastTimer = null;
+function showToast(message, accent = false) {
+  if (toastTimer) clearTimeout(toastTimer);
+  dom.toast.textContent = message;
+  dom.toast.classList.toggle('accent', accent);
+  dom.toast.classList.add('show');
+  toastTimer = setTimeout(() => {
+    dom.toast.classList.remove('show');
+    toastTimer = null;
+  }, 2000);
+}
+
+// ===================== UTILS =====================
+function getContrastColor(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  const luma = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luma > 0.55 ? '#0D0D0D' : '#F5F5F5';
+}
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function categoryName(cat) {
+  const map = { minimal:'Minimal', gradient:'Gradient', retro:'Retro', neon:'Neon', nature:'Nature' };
+  return map[cat] || cat;
+}
+
+// ===================== EVENTS =====================
+function bindEvents() {
+  // Filter tags
+  dom.filterTags.addEventListener('click', (e) => {
+    const tag = e.target.closest('.tag');
+    if (!tag) return;
+    filterByCategory(tag.dataset.category);
+  });
+
+  // Discover
+  dom.discoverBtn.addEventListener('click', discoverRandom);
+
+  // Favorites trigger
+  dom.favTrigger.addEventListener('click', openFavorites);
+  dom.drawerClose.addEventListener('click', closeFavorites);
+  dom.drawerOverlay.addEventListener('click', closeFavorites);
+  dom.drawerClear.addEventListener('click', () => {
+    if (state.favorites.length === 0) return;
+    if (confirm('确定要清空所有收藏吗？')) {
+      state.favorites = [];
+      saveFavorites();
+      renderGrid();
+      renderFavorites();
+      updateFavCount();
+      if (state.detailOpen) updateDetailFavBtn();
+      showToast('All favorites cleared');
+    }
+  });
+
+  // Detail
+  dom.detailClose.addEventListener('click', closeDetail);
+  dom.detailOverlay.addEventListener('click', (e) => {
+    if (e.target === dom.detailOverlay) closeDetail();
+  });
+  dom.detailCopyMain.addEventListener('click', () => {
+    if (state.detailPalette) copyToClipboard(state.detailPalette.colors[state.detailColorIndex]);
+  });
+  dom.detailFavBtn.addEventListener('click', () => {
+    if (state.detailPalette) toggleFavorite(state.detailPalette.id);
+  });
+
+  // Star rating
+  $('#previewStars').addEventListener('click', (e) => {
+    const star = e.target.closest('.star');
+    if (!star) return;
+    const val = parseInt(star.dataset.value);
+    $$('#previewStars .star').forEach((s, i) => s.classList.toggle('filled', i < val));
+    if (state.detailPalette) {
+      const color = state.detailPalette.colors[state.detailColorIndex];
+      $$('#previewStars .star.filled').forEach(s => s.style.color = color);
+    }
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (state.detailOpen) closeDetail();
+      if (state.drawerOpen) closeFavorites();
+    }
+  });
+}
+</script>
+
+</body>
+</html>
